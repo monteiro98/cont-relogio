@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contagem Regressiva</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .sparkle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 1;
+        }
+        
+        .container {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 20px;
+            background-color: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            z-index: 2;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .countdown {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .time-segment {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .time-value {
+            font-size: 5rem;
+            font-weight: bold;
+            background: linear-gradient(to bottom, #fff, #1E90FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 15px rgba(30, 144, 255, 0.7);
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+        
+        .time-value.pulse {
+            animation: pulse 0.5s ease;
+        }
+        
+        .time-label {
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            color: #1E90FF;
+            margin-top: 0.5rem;
+        }
+        
+        .colon {
+            font-size: 5rem;
+            display: flex;
+            align-items: center;
+            animation: blink 1s infinite;
+        }
+        
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background-color: rgba(0, 0, 0, 0.5);
+            text-align: center;
+            font-size: 1.2rem;
+            z-index: 3;
+            backdrop-filter: blur(5px);
+        }
+        
+        .day-highlight {
+            font-weight: bold;
+            color: #1E90FF;
+            font-size: 1.3rem;
+            text-shadow: 0 0 5px rgba(30, 144, 255, 0.7);
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @media (max-width: 768px) {
+            .countdown {
+                flex-wrap: wrap;
+            }
+            
+            .time-value {
+                font-size: 3.5rem;
+                min-width: 80px;
+            }
+            
+            .colon {
+                font-size: 3.5rem;
+            }
+            
+            .time-label {
+                font-size: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .time-value {
+                font-size: 2.5rem;
+                min-width: 60px;
+            }
+            
+            .colon {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Faltam:</h1>
+        <div class="countdown">
+            <div class="time-segment">
+                <div id="days" class="time-value">00</div>
+                <div class="time-label">Dias</div>
+            </div>
+            <div class="colon">:</div>
+            <div class="time-segment">
+                <div id="hours" class="time-value">00</div>
+                <div class="time-label">Horas</div>
+            </div>
+            <div class="colon">:</div>
+            <div class="time-segment">
+                <div id="minutes" class="time-value">00</div>
+                <div class="time-label">Minutos</div>
+            </div>
+            <div class="colon">:</div>
+            <div class="time-segment">
+                <div id="seconds" class="time-value">00</div>
+                <div class="time-label">Segundos</div>
+            </div>
+        </div>
+        <h1>para encontrar o amor da sua vida</h1>
+    </div>
+    
+    <footer id="current-day">
+        E hoje é <span class="day-highlight">Terça-feira</span>
+    </footer>
+
+    <script>
+        // Data alvo: 01/03/2025 às 5:30 da manhã
+        const targetDate = new Date('March 1, 2025 05:30:00').getTime();
+        
+        // Efeito de brilho ao mover o mouse
+        document.addEventListener('mousemove', function(e) {
+            createSparkle(e.clientX, e.clientY);
+        });
+        
+        // Também funciona com toque para dispositivos móveis
+        document.addEventListener('touchmove', function(e) {
+            createSparkle(e.touches[0].clientX, e.touches[0].clientY);
+        });
+        
+        function createSparkle(x, y) {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            
+            const size = Math.random() * 100 + 50;
+            sparkle.style.width = size + 'px';
+            sparkle.style.height = size + 'px';
+            sparkle.style.left = (x - size/2) + 'px';
+            sparkle.style.top = (y - size/2) + 'px';
+            
+            document.body.appendChild(sparkle);
+            
+            // Animação de aparecimento e desaparecimento
+            setTimeout(() => {
+                sparkle.style.opacity = '0.7';
+                setTimeout(() => {
+                    sparkle.style.opacity = '0';
+                    setTimeout(() => {
+                        sparkle.remove();
+                    }, 300);
+                }, 300);
+            }, 10);
+        }
+        
+        // Atualiza o dia da semana atual
+        function updateCurrentDay() {
+            const footerElement = document.getElementById('current-day');
+            const dayNames = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+            const now = new Date();
+            const dayOfWeek = now.getDay();
+            
+            const daySpan = footerElement.querySelector('.day-highlight');
+            daySpan.textContent = dayNames[dayOfWeek];
+        }
+        
+        // Executa a função quando a página carrega
+        updateCurrentDay();
+        
+        // Atualiza o contador a cada segundo
+        const countdown = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+            
+            // Cálculo para dias, horas, minutos e segundos
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            // Atualiza o display com animação
+            updateTimeWithAnimation('days', days);
+            updateTimeWithAnimation('hours', hours);
+            updateTimeWithAnimation('minutes', minutes);
+            updateTimeWithAnimation('seconds', seconds);
+            
+            // Quando a contagem regressiva termina
+            if (distance <= 0) {
+                clearInterval(countdown);
+                // Redireciona para a próxima página
+                window.location.href = 'pergunta.html';
+            }
+        }, 1000);
+        
+        // Verificação à meia-noite para atualizar o dia da semana
+        function checkDayChange() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            
+            // Se for meia-noite (00:00), atualiza o dia da semana
+            if (hours === 0 && minutes === 0) {
+                updateCurrentDay();
+            }
+            
+            // Verifica novamente em 1 minuto
+            setTimeout(checkDayChange, 60000);
+        }
+        
+        // Inicia a verificação de mudança de dia
+        checkDayChange();
+        
+        // Variáveis para armazenar os valores anteriores
+        const previousValues = {
+            days: -1,
+            hours: -1,
+            minutes: -1,
+            seconds: -1
+        };
+        
+        function updateTimeWithAnimation(id, value) {
+            const element = document.getElementById(id);
+            const formattedValue = value < 10 ? '0' + value : value;
+            
+            // Se o valor mudou, adiciona a animação
+            if (previousValues[id] !== value) {
+                element.classList.add('pulse');
+                
+                // Remove a classe após a animação terminar
+                setTimeout(() => {
+                    element.classList.remove('pulse');
+                }, 500);
+                
+                previousValues[id] = value;
+            }
+            
+            element.textContent = formattedValue;
+        }
+    </script>
+</body>
+</html>
